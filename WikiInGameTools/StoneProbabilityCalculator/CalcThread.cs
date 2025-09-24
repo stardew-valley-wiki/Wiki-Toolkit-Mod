@@ -20,16 +20,19 @@ public class CalcThread
     public readonly int MineLevel;
     private readonly int _averageLuckLevel;
     private readonly int _averageMiningLevel;
+    private readonly bool _desertFestival;
 
     private readonly Dictionary<string, int> _stats = new();
 
-    public CalcThread(double dailyLuck, int mineLevel, int luckLevel, int miningLevel, int difficulty=0)
+    public CalcThread(double dailyLuck, int mineLevel, int luckLevel, int miningLevel, 
+        int difficulty=0, bool desertFestival=false)
     {
         AdditionalDifficulty = difficulty;
         AverageDailyLuck = dailyLuck;
         MineLevel = mineLevel;
         _averageLuckLevel = luckLevel;
         _averageMiningLevel = miningLevel;
+        _desertFestival = desertFestival;
     }
 
     public string Run(int x)
@@ -158,7 +161,7 @@ public class CalcThread
             //             break;
             //         }
             //
-            //     if (!foundSomething && Random.NextDouble() < 0.45) return null;
+            //     if (!foundSomething && _random.NextDouble() < 0.45) return null;
             //     var brownSpot = false;
             //     for (var i = 0; i < brownSpots.Count; i++)
             //     {
@@ -173,21 +176,21 @@ public class CalcThread
             //
             //     if (tile.X > 50f)
             //     {
-            //         whichStone = Game1Random.Choose(668, 670);
-            //         if (Random.NextDouble() < 0.09 + _averageDailyLuck / 2.0)
-            //             return Game1Random.Choose("BasicCoalNode0", "BasicCoalNode1");
-            //         if (Random.NextDouble() < 0.25) return null;
+            //         whichStone = _game1Random.Choose(668, 670);
+            //         if (_random.NextDouble() < 0.09 + AverageDailyLuck / 2.0)
+            //             return _game1Random.Choose("BasicCoalNode0", "BasicCoalNode1");
+            //         if (_random.NextDouble() < 0.25) return null;
             //     }
             //     else if (brownSpot)
             //     {
-            //         whichStone = Random.Choose(32, 38);
-            //         if (Random.NextDouble() < 0.01)
+            //         whichStone = _random.Choose(32, 38);
+            //         if (_random.NextDouble() < 0.01)
             //             return "751";
             //     }
             //     else
             //     {
-            //         whichStone = Random.Choose(34, 36);
-            //         if (Random.NextDouble() < 0.01)
+            //         whichStone = _random.Choose(34, 36);
+            //         if (_random.NextDouble() < 0.01)
             //             return "290";
             //     }
             //
@@ -213,6 +216,9 @@ public class CalcThread
                 var chanceForIridium = Math.Min(100, skullCavernMineLevel) * (0.0003 + iridiumBoost);
                 var chanceForGold = 0.01 + (MineLevel - Math.Min(150, skullCavernMineLevel)) * 0.0005;
                 var chanceForIron = Math.Min(0.5, 0.1 + (MineLevel - Math.Min(200, skullCavernMineLevel)) * 0.005);
+
+                if (_desertFestival && _random.NextBool(0.13 + MineLevel * 1.25 / 1000f))
+                    return "CalicoEggStone";
 
                 if (_random.NextDouble() < chanceForIridium)
                     return "765";

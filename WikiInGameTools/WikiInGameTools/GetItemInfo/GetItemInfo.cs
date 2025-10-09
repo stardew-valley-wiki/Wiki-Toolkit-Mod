@@ -57,25 +57,42 @@ public class GetItemInfo : IModule
         
         foreach (var item in all)
         {
-            var enName = item.Name;           // 物品英文名称
+            var enName = item.Name; // 物品英文名称
             var zhName = ContainsChinese(item.DisplayName) 
                 ? ApplyReplacements(item.DisplayName.Replace(" ", ""))
-                : item.DisplayName;    // 物品显示名称（可能包含中文翻译）
-            var itemType = item.Type;           // 物品类型标识，如 "(O)" 表示 Object
-            var itemId = item.Id;            // 简短ID
-            var itemFullId = item.QualifiedItemId; // 完整限定ID
+                : item.DisplayName; // 物品显示名称（可能包含中文翻译）
+            var itemId = item.Id; // 简短ID
+            if ((zhName == "木材" && itemId != "388") || (zhName == "石头" && itemId != "390"))
+            {
+                continue;
+            }
+            var itemType = item.Type; // 物品类型标识，如 "(O)" 表示 Object
+            var itemFullId = item.QualifiedItemId; // 完整ID
             var itemPrototype = item.Item;
             var separators = new char[] { '\n', '\r' };
             var desc = GetDescription(itemPrototype)?.Split(separators);
             var itemDesc = (desc ?? Array.Empty<string>()).Where(j => !j.StartsWith("等级")).Aggregate("", (current, j) => current + j.Trim());
+            if (itemType == "(O)")
+            {
+                TryAddOrUpdateIfChinese(id2Desc, itemId, itemDesc);
+            }
+            if (!(zhName == "杂草" && itemId != "0"))
+            {
+                TryAddOrUpdateIfChinese(enName2Desc, enName, itemDesc);
+                TryAddOrUpdateIfChinese(zhName2Desc, zhName, itemDesc);
+            }
             TryAddOrUpdateIfChinese(enName2ZhName, enName, zhName);
-            TryAddOrUpdateIfChinese(enName2Desc, enName, itemDesc);
-            TryAddOrUpdateIfChinese(zhName2Desc, zhName, itemDesc);
-            TryAddOrUpdateIfChinese(id2Desc, itemId, itemDesc);
             TryAddOrUpdateIfChinese(fullId2ZhName, itemFullId, zhName);
             fullId2EnName.TryAdd(itemFullId, enName);
             zhName2Id.TryAdd(zhName, itemFullId);
-            enName2Id.TryAdd(enName, itemFullId);
+            if (!zhName2Id.TryAdd(zhName, itemFullId))
+            {
+                zhName2Id[zhName] = $"{zhName2Id[zhName]}<br />{itemFullId}";
+            }
+            if (!enName2Id.TryAdd(enName, itemFullId))
+            {
+                enName2Id[enName] = $"{enName2Id[enName]}<br />{itemFullId}";
+            }
         }
         ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "enName2ZhName.json"), enName2ZhName);
         ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "enName2Desc.json"), enName2Desc);

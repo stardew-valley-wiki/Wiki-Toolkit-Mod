@@ -1,4 +1,7 @@
-﻿using StardewModdingAPI;
+﻿using System.Collections.Generic;
+using System.Linq;
+using StardewModdingAPI;
+using StardewValley;
 using WikiInGameTools._Framework;
 using WikiInGameTools._Framework.ConfigurationService;
 using WikiInGameTools.GetNPCGiftTastes.Framework;
@@ -104,6 +107,60 @@ internal class GetNPCGiftTastes : IModule
         TastesGetter.GetAllGiftTastes();
         ModEntry.Log("已将全部结果导出至：output/AllGiftTastes.json");
     }
+    
+    
+    private static List<string> ID_event = new List<string>();
+    public static char[] ForwardSlash = new char[] { '/' };
+    
+    /// <summary>
+    /// 只是临时测试
+    /// </summary>
+    private void TestEvent(string command, string[] args)
+    {
+        foreach (GameLocation location in Game1.locations)
+        {
+            string text;
+            Dictionary<string, string> locationEvents;
+            if (location.TryGetLocationEvents(out text, out locationEvents))
+            {
+                foreach (string key in locationEvents.Keys.ToArray<string>())
+                {
+                    if (key.Contains('/'))
+                    {
+                        string[] splitCond = key.Split(ForwardSlash);
+                        string eventId = splitCond[0];
+                        if (!ID_event.Contains(eventId))
+                        {
+                            ID_event.Add(eventId);
+                        }
+                        // if (splitCond.Length >= 1)
+                        // {
+                        //     string script;
+                        //     Event event_;
+                        //     string id;
+                        //     if (locationEvents.TryGetValue(key, out script))
+                        //     {
+                        //         // event_ = new Event(location, splitCond, script);
+                        //         id = splitCond[0];
+                        //     }
+                        //     else
+                        //     {
+                        //         // event_ = new Event(location, splitCond, "");
+                        //         id = splitCond[0];
+                        //     }
+                        //     if (!ID_event.Contains(id))
+                        //     {
+                        //         ID_event.Add(id);
+                        //         ID_event.Add(script);
+                        //     }
+                        // }
+                    }
+                }
+            }
+            
+        }
+        ModEntry.Log(string.Join(", ", ID_event));
+    }
 
     public GetNPCGiftTastes()
     {
@@ -123,5 +180,9 @@ internal class GetNPCGiftTastes : IModule
             "获取所有 NPC 对所有物品的态度，并导出为 json。\n" +
             "使用示例：All_Gift_Tastes\n",
             GetAll);
+        ModEntry.ModHelper.ConsoleCommands.Add("TestEvent",
+            "TestEvent\n" +
+            "使用示例：TestEvent\n",
+            TestEvent);
     }
 }

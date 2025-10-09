@@ -72,12 +72,13 @@ public class GetItemInfo : IModule
             var separators = new char[] { '\n', '\r' };
             var desc = GetDescription(itemPrototype)?.Split(separators);
             var itemDesc = (desc ?? Array.Empty<string>()).Where(j => !j.StartsWith("等级")).Aggregate("", (current, j) => current + j);
-            if (itemType == "(O)")
+            
+            if (!(zhName == "杂草" && itemId != "0") || !ContainsChinese(itemDesc))
             {
-                TryAddOrUpdateIfChinese(id2Desc, itemId, itemDesc);
-            }
-            if (!(zhName == "杂草" && itemId != "0"))
-            {
+                if (itemType == "(O)")
+                {
+                    TryAddOrUpdateIfChinese(id2Desc, itemId, itemDesc);
+                }
                 TryAddOrUpdateIfChinese(enName2Desc, enName, itemDesc);
                 TryAddOrUpdateIfChinese(zhName2Desc, zhName, itemDesc);
             }

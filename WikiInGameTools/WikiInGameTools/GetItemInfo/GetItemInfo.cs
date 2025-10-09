@@ -84,7 +84,6 @@ public class GetItemInfo : IModule
             TryAddOrUpdateIfChinese(enName2ZhName, enName, zhName);
             TryAddOrUpdateIfChinese(fullId2ZhName, itemFullId, zhName);
             fullId2EnName.TryAdd(itemFullId, enName);
-            zhName2Id.TryAdd(zhName, itemFullId);
             if (!zhName2Id.TryAdd(zhName, itemFullId))
             {
                 zhName2Id[zhName] = $"{zhName2Id[zhName]}<br />{itemFullId}";

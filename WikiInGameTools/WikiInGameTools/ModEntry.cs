@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using HarmonyLib;
+using JetBrains.Annotations;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -53,6 +54,19 @@ internal class ModEntry : Mod
         helper.Events.Input.ButtonsChanged += OnButtonChanged;
 
         Config = helper.ReadConfig<ModConfig>();
+        
+        var harmony = new Harmony(this.ModManifest.UniqueID);
+        harmony.Patch(
+            original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.needsToBeDonated)),
+            prefix: new HarmonyMethod(typeof(ModEntry), nameof(NeedsToBeDonated))
+        );
+    }
+    
+    public static bool NeedsToBeDonated(ref bool __result)
+    {
+        if (!GetItemInfo.IsActive) return true;
+        __result = false;
+        return false;
     }
     
     /****

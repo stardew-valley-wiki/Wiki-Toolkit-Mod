@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace StoneProbabilityCalculator;
 
@@ -18,15 +20,17 @@ public static class Utilities
     /// </summary>
     /// <param name="items">需要并行处理的元素集合</param>
     /// <param name="action">元素的操作函数</param>
-    public static void ParallelRun(IEnumerable<CalcThread> items, Func<CalcThread, string> action)
+    public static void ParallelRun(IEnumerable<SimulateThread> items, Action<SimulateThread> action)
     {
         Parallel.ForEach(
             items,
             new ParallelOptions { MaxDegreeOfParallelism = MaxDegree },
             item =>
             {
-                var json = action(item);
-                File.WriteAllText($"{item.MineLevel},{item.AverageDailyLuck},{item.AdditionalDifficulty}.json", json);
+                action(item);
+                var dict = item.Stats.ToDictionary(kvp => kvp.Key.ID2Name(), kvp => kvp.Value);
+                var json = JsonConvert.SerializeObject(dict, Formatting.Indented);
+                File.WriteAllText($"{item.MineLevel},{item.DailyLuck},{item.Difficulty}.json", json);
             }
         );
     }

@@ -14,7 +14,6 @@ public struct ItemInfo
 
     public ItemInfo(Item item)
     {
-        
         QualifiedItemID = item.QualifiedItemId;
         Name = item.Name;
         DisplayName = item.DisplayName;

@@ -35,20 +35,7 @@ public class GetItemInfo : IModule
         ItemInfos = null;
     }
     
-    // 特例物品
-    // ["诡异玩偶（绿）"] = "126"
-    // ["诡异玩偶（黄）"] = "127"
-    // ["Joja可乐"] = "167"
-    // ["垃圾（物品）"] = "168"
-    // ["破损的CD"] = "171"
-    // ["鱼饵（物品）"] = "685"
-    // ["针对性鱼饵"] = "SpecificBait"
-    // ["熏鱼"] = "Smoked"
-    // ["果干"] = "DriedFruit"
-    // ["蘑菇干"] = "DriedMushrooms"
-    // ["青蛙蛋"] = "FrogEgg"
-    // 重名物品
-    // 蛋、鸡雕像、诡异玩偶
+    
 
     private void SerializeAll(string command, string[] args)
     {
@@ -58,23 +45,21 @@ public class GetItemInfo : IModule
             return;
         }
         
+        var lang = ModEntry.ModHelper.Translation.Locale.Contains("zh") ? "zh" : "en";
+        
         var itemRepository = new ItemRepository();
         var all = itemRepository.GetAll();
         
         // 注：需要更改当前显示的语言来导出数据。
         
-        var internalName2ZhName = new Dictionary<string, string>(); // Module:Name/data/en
-        var internalName2Desc = new Dictionary<string, string>(); // Module:Description/data/en
-        var displayName2Desc = new Dictionary<string, string>(); // Module:Description/data/zh
-        var id2Desc = new Dictionary<string, string>(); // Module:Description/data/id
-        var fullId2DisplayName = new Dictionary<string, string>(); // Module:ItemNames/data/zh
-        var fullId2InternalName = new Dictionary<string, string>(); // Module:ItemNames/data/en
-        var displayName2Id = new Dictionary<string, string>(); // Module:ID/data/zh
-        var internalName2Id = new Dictionary<string, string>(); // Module:ID/data/en
+        var id2Desc = new Dictionary<string, string>(); // Module:Description/data/id（仅限 Object，历史遗留兼容性处理）
+        var displayName2Desc = new Dictionary<string, string>(); // Module:Description/data/zh（en 下此项不使用）
+        var fullId2DisplayName = new Dictionary<string, string>(); // Module:ItemNames/data/[zh/en]
+        var displayName2FullId = new Dictionary<string, string>(); // Module:ID/data/[zh/en]
         
         foreach (var item in all)
         {
-            var internalName = item.Name; // 物品英文名称
+            var internalName = item.Name; // 物品内部名称
             var displayName = ContainsChinese(item.DisplayName) 
                 ? ApplyReplacements(item.DisplayName.Replace(" ", ""))
                 : item.DisplayName; // 物品显示名称（可能包含中文翻译）
@@ -96,31 +81,29 @@ public class GetItemInfo : IModule
                 {
                     TryAddOrUpdateIfChinese(id2Desc, itemId, itemDesc);
                 }
-                TryAddOrUpdateIfChinese(internalName2Desc, internalName, itemDesc);
                 TryAddOrUpdateIfChinese(displayName2Desc, displayName, itemDesc);
             }
-            TryAddOrUpdateIfChinese(internalName2ZhName, internalName, displayName);
             TryAddOrUpdateIfChinese(fullId2DisplayName, itemFullId, displayName);
-            fullId2InternalName.TryAdd(itemFullId, internalName);
-            if (!displayName2Id.TryAdd(displayName, itemFullId))
+            if (!displayName2FullId.TryAdd(displayName, itemFullId))
             {
-                displayName2Id[displayName] = $"{displayName2Id[displayName]}<br />{itemFullId}";
-            }
-            if (!internalName2Id.TryAdd(internalName, itemFullId))
-            {
-                internalName2Id[internalName] = $"{internalName2Id[internalName]}<br />{itemFullId}";
+                displayName2FullId[displayName] = $"{displayName2FullId[displayName]}\\{itemFullId}";
             }
         }
-        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "internalName2ZhName.json"), internalName2ZhName);
-        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "internalName2Desc.json"), internalName2Desc);
-        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "displayName2Desc.json"), displayName2Desc);
-        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "id2Desc.json"), id2Desc);
-        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "fullId2DisplayName.json"), fullId2DisplayName);
-        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "fullId2InternalName.json"), fullId2InternalName);
-        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "displayName2Id.json"), displayName2Id);
-        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "internalName2Id.json"), internalName2Id);
 
+        if (lang == "zh")
+        {
+            WriteJsonFile(displayName2Desc, nameof(displayName2Desc));
+            WriteJsonFile(id2Desc, nameof(id2Desc));
+        }
+        WriteJsonFile(fullId2DisplayName, nameof(fullId2DisplayName));
+        WriteJsonFile(displayName2FullId, nameof(displayName2FullId));
         return;
+
+        static void WriteJsonFile(Dictionary<string, string> dictionary, string name)
+        {
+            var lang = ModEntry.ModHelper.Translation.Locale.Contains("zh") ? "zh" : "en";
+            ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", lang, name + ".json"), dictionary);
+        }
 
         string ApplyReplacements(string text)
         {
@@ -206,8 +189,59 @@ public class GetItemInfo : IModule
             "输出所有物品相关数据。", SerializeAll);
     }
     
-    // 先分别使用中文和英语导出一次（回到主标题切换语言；放到不同文件夹下，例如 zh 和 en）
-    // 二者的 internalName2Desc、internalName2Id、internalName2ZhName、fullId2InternalName 均不使用
-    // en 下的 displayName2Desc、id2Desc 不使用
+    // 先分别使用中文和英语导出一次（回到主标题切换语言）
+    // 重名物品 & 特例物品
     
+    // 针对性鱼饵 = (O)SpecificBait = Targeted Bait 【手动】
+    // 熏鱼 = (O)Smoked = Smoked Fish【手动】
+    // 果干 = (O)DriedFruit = Dried Fruit【手动】
+    // 蘑菇干 = (O)DriedMushrooms = Dried Mushrooms【手动】
+    
+    // 垃圾（物品） = (O)168 = Trash (item)
+    // 鱼饵（物品） = (O)685 = Bait (item)
+    // 青蛙蛋 = (TR)FrogEgg = Frog Egg
+    
+    // 鸡雕像 = (O)113 = Chicken Statue
+    // 鸡雕像（家具） = (BC)31 & (F)1305 = Chicken Statue (furniture)
+    // 诡异玩偶（绿） = (O)126 = Strange Doll (green)
+    // 诡异玩偶（黄） = (O)127 = Strange Doll (yellow)
+    // 锚 = (O)117 = Anchor
+    // 锚（家具） = (F)1675 = Anchor (furniture)
+    // 蛋
+    // 大鸡蛋
+    // 远古斑点 = (O)590 = Artifact Spot
+    // 绿色斑点 = (O)SeedSpot = SeedSpot
+    // 腐烂的植物
+    // 日记残页
+    // 补给箱
+    // ???
+    // 绿雨杂草
+    // 家居植物
+    // 木椅
+    // 石猫头鹰 = (BC)54 = Stone Owl
+    // 石猫头鹰（随机事件） = (BC)95 = [Random Events#Stone_Owl]
+    // 篝火 = (BC)146 = Campfire 【三个重名物品，只有 146 为正常物品】
+    // 邪恶雕像
+    // 树懒骨架（左、中、右）
+    // 直立的晶洞、黑曜石花瓶、唱歌的石头
+    // 珍奇乌鸦
+    // 风干太阳花
+    // 木桶 = (BC)163 = Cask
+    // 树桩火炬（装饰） = (F)2398 = Stump Torch
+    // 树桩火炬 = (BC)147 = Stump Brazier
+    // 季节性植物
+    // 餐椅（红） = (F)70 = Dining Chair (red)
+    // 餐椅（黄） = (F)67 = Dining Chair (yellow)
+    // 酒桌 = (F)1134 = Pub Table
+    // 酒桌（长） = (F)WineTable = Wine Table
+    // 小祝尼魔毛绒玩具（四种颜色）
+    // 午夜沙滩床 = (F)MidnightBeachBed = Midnight Beach Bed
+    // 午夜沙滩双人床 = (F)MidnightBeachDoubleBed = Midnight Beach Double Bed
+    // 丛林贴纸、圆木镶板、天花板垂叶、云朵贴纸
+    // 地板分隔条 = 地板分隔条（左） + 地板分隔条（右） = Floor Divider【此项需要合并】
+    // 派对帽（蓝色） = (H)58 = Party Hat (blue)
+    // 派对帽（绿色） = (H)59 = Party Hat (green)
+    // 派对帽（红色） = (H)57 = Party Hat (red)
+    // 所有淘盘、所有上衣、水手服、爱心T恤等（除v1.6外，旧版本 (S) 服饰物品没有独立页面，不列出）
+    // 所有地板、所有壁纸
 }

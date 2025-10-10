@@ -45,25 +45,52 @@ internal class GetItemInfo : IModule
             .DistinctBy(i => i.QualifiedItemID[3..])
             .ToDictionary(i => i.QualifiedItemID[3..], i => i.Description);
 
+        var dictId2Zh = ItemInfos
+            .Where(i => i.QualifiedItemID.StartsWith("(O)"))
+            .DistinctBy(i => i.QualifiedItemID[3..])
+            .ToDictionary(i => i.QualifiedItemID[3..], i => i.DisplayName);
+
+        var dictId2En = ItemInfos
+            .Where(i => i.QualifiedItemID.StartsWith("(O)"))
+            .DistinctBy(i => i.QualifiedItemID[3..])
+            .ToDictionary(i => i.QualifiedItemID[3..], i => i.Name);
+
         var dictEn2Desc = ItemInfos
             .DistinctBy(i => i.Name)
             .ToDictionary(i => i.Name, i => i.Description);
 
+        var dictEn2ID = ItemInfos
+            .DistinctBy(i => i.Name)
+            .ToDictionary(i => i.Name, i => i.QualifiedItemID);
+
+        var dictEn2Zh = ItemInfos
+            .DistinctBy(i => i.Name)
+            .ToDictionary(i => i.Name, i => i.DisplayName);
+
         var dictZh2Desc = ItemInfos
+            .DistinctBy(i => i.DisplayName)
+            .ToDictionary(i => i.DisplayName, i => i.Description);
+
+        var dictZh2ID = ItemInfos
             .DistinctBy(i => i.DisplayName)
             .ToDictionary(i => i.DisplayName, i => i.QualifiedItemID);
 
-        var dictEn2Name = ItemInfos
-            .DistinctBy(i => i.Name)
-            .ToDictionary(i => i.Name, i => i.DisplayName);
+        var dictZh2En = ItemInfos
+            .DistinctBy(i => i.DisplayName)
+            .ToDictionary(i => i.DisplayName, i => i.Name);
 
         var dictId2Tags = ItemInfos
             .ToDictionary(i => i.QualifiedItemID, i => i.Tags.Where(t => !t.StartsWith("id_")));
 
         ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictId2Desc.json"), dictId2Desc);
+        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictId2Zh.json"), dictId2Zh);
+        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictId2En.json"), dictId2En);
         ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictEn2Desc.json"), dictEn2Desc);
+        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictEn2ID.json"), dictEn2ID);
+        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictEn2Zh.json"), dictEn2Zh);
         ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictZh2Desc.json"), dictZh2Desc);
-        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictEn2Name.json"), dictEn2Name);
+        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictZh2ID.json"), dictZh2ID);
+        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictZh2En.json"), dictZh2En);
         ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "dictId2Tags.json"), dictId2Tags);
     }
 

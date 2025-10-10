@@ -66,10 +66,6 @@ internal class ModEntry : Mod
     /// </summary>
     private static void OnGameLoaded(object sender, SaveLoadedEventArgs e)
     {
-        CalcFishesProb = new CalcFishesProb.CalcFishesProb();
-        if (Config.CalcFishesProbModConfig.Enable)
-            CalcFishesProb.Activate();
-
         DebugModule = new DebugModule.DebugModule();
         if (Config.DebugModuleConfig.Enable)
             DebugModule.Activate();
@@ -78,13 +74,12 @@ internal class ModEntry : Mod
         if (Config.VariableMonitorConfig.Enable)
             VariableMonitor.Activate();
 
-        // 语句 GetItemInfo = new GetItemInfo();
-        // 需要在 OnGameLaunched 中执行
+        if (Config.CalcFishesProbModConfig.Enable)
+            CalcFishesProb.Activate();
+
         if (Config.GetItemInfoModConfig.Enable)
             GetItemInfo.Activate();
 
-        // 语句 GetNPCGiftTastes = new GetNPCGiftTastes();
-        // 需要在 OnGameLaunched 中执行
         if (Config.GetNPCGiftTastesModConfig.Enable)
             GetNPCGiftTastes.Activate();
     }
@@ -95,16 +90,14 @@ internal class ModEntry : Mod
     private static void OnGameUnload(object sender, ReturnedToTitleEventArgs e)
     {
         CalcFishesProb.Deactivate();
-        CalcFishesProb = null;
+        GetItemInfo.Deactivate();
+        GetNPCGiftTastes.Deactivate();
 
         DebugModule.Deactivate();
         DebugModule = null;
 
         VariableMonitor.Deactivate();
         VariableMonitor = null;
-
-        GetItemInfo.Deactivate();
-        GetNPCGiftTastes.Deactivate();
     }
 
     /// <summary>
@@ -117,6 +110,7 @@ internal class ModEntry : Mod
             ReloadConfig
         );
 
+        CalcFishesProb = new CalcFishesProb.CalcFishesProb();
         GetItemInfo = new GetItemInfo.GetItemInfo();
         GetNPCGiftTastes = new GetNPCGiftTastes.GetNPCGiftTastes();
     }
@@ -145,6 +139,7 @@ internal class ModEntry : Mod
         ModHelper.WriteConfig(Config);
         Config = ModHelper.ReadConfig<ModConfig>();
         GetNPCGiftTastes.Reload();
+        GetItemInfo.Reload();
 
         if (!Game1.hasLoadedGame) return;
 

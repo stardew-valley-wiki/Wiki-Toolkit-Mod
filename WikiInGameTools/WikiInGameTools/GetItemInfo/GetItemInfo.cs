@@ -91,12 +91,12 @@ public class GetItemInfo : IModule
         // 注：需要更改当前显示的语言来导出数据。
 
         var floorDividers = new List<string> { "Floor Divider R", "Floor Divider L", "地板分隔条（右）", "地板分隔条（左）" };
-        var mannequins = new List<string> { "Floor Divider R", "Floor Divider L", "地板分隔条（右）", "地板分隔条（左）" };
-        var cursedMannequins = new List<string> { "Floor Divider R", "Floor Divider L", "地板分隔条（右）", "地板分隔条（左）" };
-        var id2Desc = new Dictionary<string, string>(); // Module:Description/data/id（仅限 Object，历史遗留兼容性处理）
-        var displayName2Desc = new Dictionary<string, string>(); // Module:Description/data/zh（en 下此项不使用）
-        var fullId2DisplayName = new Dictionary<string, string>(); // Module:ItemNames/data/[zh/en]
-        var displayName2FullId = new Dictionary<string, string>(); // Module:ID/data/[zh/en]
+        var mannequins = new List<string> { "Mannequin (M)", "Mannequin (F)", "假人模特（男）", "假人模特（女）" };
+        var cursedMannequins = new List<string> { "Cursed Mannequin (M)", "Cursed Mannequin (F)", "被诅咒的假人模特（男）", "被诅咒的假人模特（女）" };
+        var id_desc = new Dictionary<string, string>(); // （仅限 Object，历史遗留兼容性处理）
+        var name_desc = new Dictionary<string, string>();
+        var id_name_unique = new Dictionary<string, string>();
+        var name_id_unique = new Dictionary<string, string>();
 
 
         var dictId2Desc = ItemInfos.ToDictionary(i => i.QualifiedItemID, i => i.Description);
@@ -146,30 +146,30 @@ public class GetItemInfo : IModule
             if (!IsInvalidString(itemDesc))
                 if (!(displayName == "杂草" && itemId != "0") || !ContainsChinese(itemDesc))
                 {
-                    if (itemType == "(O)") TryAddOrUpdateIfChinese(id2Desc, itemId, itemDesc);
-                    TryAddOrUpdateIfChinese(displayName2Desc, displayName, itemDesc);
+                    if (itemType == "(O)") TryAddOrUpdateIfChinese(id_desc, itemId, itemDesc);
+                    TryAddOrUpdateIfChinese(name_desc, displayName, itemDesc);
                 }
 
 
-            TryAddOrUpdateIfChinese(fullId2DisplayName, itemFullId, displayName);
-            if (!displayName2FullId.TryAdd(displayName, itemFullId))
-                displayName2FullId[displayName] = $"{displayName2FullId[displayName]}\\{itemFullId}";
+            TryAddOrUpdateIfChinese(id_name_unique, itemFullId, displayName);
+            if (!name_id_unique.TryAdd(displayName, itemFullId))
+                name_id_unique[displayName] = $"{name_id_unique[displayName]}\\{itemFullId}";
         }
 
         if (lang == "zh")
         {
-            WriteJsonFile(displayName2Desc, nameof(displayName2Desc));
-            WriteJsonFile(id2Desc, nameof(id2Desc));
+            WriteJsonFile(name_desc, nameof(name_desc));
+            WriteJsonFile(id_desc, nameof(id_desc));
         }
 
-        WriteJsonFile(fullId2DisplayName, nameof(fullId2DisplayName));
-        var fullId2DisplayName2 = displayName2FullId.ToDictionary(pair => pair.Value, pair => pair.Key);
-        WriteJsonFile(fullId2DisplayName2, nameof(fullId2DisplayName2));
-        WriteJsonFile(displayName2FullId, nameof(displayName2FullId));
+        WriteJsonFile(id_name_unique, nameof(id_name_unique));
+        var id_name = name_id_unique.ToDictionary(pair => pair.Value, pair => pair.Key);
+        WriteJsonFile(id_name, nameof(id_name));
+        WriteJsonFile(name_id_unique, nameof(name_id_unique));
         if (lang == "en")
         {
-            var displayName2FullId2 = displayName2FullId.ToDictionary(pair => pair.Key.ToLower(), pair => pair.Value);
-            WriteJsonFile(displayName2FullId2, nameof(displayName2FullId2));
+            var name_id = name_id_unique.ToDictionary(pair => pair.Key.ToLower(), pair => pair.Value);
+            WriteJsonFile(name_id, nameof(name_id));
         }
 
         return;

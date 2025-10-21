@@ -8,6 +8,8 @@
   此模块用于将指定地点、天气、时间的条件下所有可能出现的鱼类列表导出为 `.json`，然后将这些文件作为原始数据传入 [@ytloe](https://github.com/ytloe) 开发的 [calcFishesProb.py](../../calcScripts%20by%20Ytloe/src/calcFishesProb.py) 脚本进行后续具体概率的计算。
 - **DebugModule** ([文档](DebugModule/README.md))  
   测试用模块，可以在这个模块里添加各种对原版调试用的代码（增加补丁类记得在 DebugModule 里注册）
+- **GetItemInfo**  
+  用于获取并导出游戏内各种数据的字典数据至 json，后续转换为 .lua 配合 wiki 内的模块实现部分内容的自动解析。
 - **GetNPCGiftTastes** ([文档](GetNPCGiftTastes/README.md))  
   此模块添加了三个控制台命令，用于获取所有 NPC 对指定物品的态度，或指定的 NPC 对所有物品的态度，并将结果输出为 Wiki 可用的格式。
 - **VariableMonitor** ([文档](VariableMonitor/README.md))  

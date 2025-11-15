@@ -1,16 +1,18 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using StardewValley;
 
 namespace WikiInGameTools.getItemInfo.Framework;
 
+[Serializable]
 public struct ItemInfo
 {
-    public readonly string QualifiedItemID;
-    public readonly string Name;
-    public readonly string DisplayName;
-    public readonly string Description;
-    public readonly List<string> Tags = new();
+    public string QualifiedItemID;
+    public string Name;
+    public string DisplayName;
+    public string Description;
+    public List<string> Tags = new();
 
     public ItemInfo(Item item)
     {

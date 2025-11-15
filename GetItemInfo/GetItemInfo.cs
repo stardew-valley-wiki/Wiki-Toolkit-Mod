@@ -53,9 +53,12 @@ public class GetItemInfo : IModule
     {
         ModEntry.ModHelper.ConsoleCommands.Add("Get_All_Item_Info",
             "输出所有物品相关数据。", SerializeAll);
+        ModEntry.ModHelper.ConsoleCommands.Add("Get_All_Weapon_Info",
+            "输出所有武器相关数据。", SerializeAllWeapon);
     }
 
     private List<ItemInfo> ItemInfos { get; set; }
+    private List<WeaponInfo> WeaponInfos { get; set; }
     public bool IsActive { get; private set; }
 
     public IConfig Config => ModEntry.Config.GetItemInfoModConfig;
@@ -67,12 +70,18 @@ public class GetItemInfo : IModule
             .SelectMany(r => r.GetAllData().Select(r.CreateItem))
             .Select(i => new ItemInfo(i))
             .ToList();
+        WeaponInfos = ItemRegistry.ItemTypes
+            .SelectMany(r => r.GetAllData().Select(r.CreateItem))
+            .OfType<MeleeWeapon>()
+            .Select(i => new WeaponInfo(i))
+            .ToList();
     }
 
     public void Deactivate()
     {
         IsActive = false;
         ItemInfos = null;
+        WeaponInfos = null;
     }
 
     private void SerializeAll(string command, string[] args)
@@ -103,7 +112,7 @@ public class GetItemInfo : IModule
 
         foreach (var item in all)
         {
-            var internalName = item.Name; // 物品内部名称
+            // var internalName = item.Name; // 物品内部名称
             var displayName = ContainsChinese(item.DisplayName)
                 ? ApplyReplacements(item.DisplayName.Replace(" ", ""))
                 : item.DisplayName; // 物品显示名称（可能包含中文翻译）
@@ -299,6 +308,19 @@ public class GetItemInfo : IModule
         */
     }
 
+    private void SerializeAllWeapon(string command, string[] args)
+    {
+        if (!IsActive)
+        {
+            ModEntry.Log("模块未被启用！", LogLevel.Error);
+            return;
+        }
+
+        var dictWeapon = WeaponInfos
+            .ToDictionary(i => i.QualifiedItemID, i => i);
+
+        ModEntry.ModHelper.Data.WriteJsonFile(Path.Combine("output", "weapons.json"), dictWeapon);
+    }
     // 先分别使用中文和英语导出一次（回到主标题切换语言）
     // 重名物品 & 特例物品
 

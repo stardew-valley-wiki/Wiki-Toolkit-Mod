@@ -2,7 +2,10 @@ using System;
 using StardewValley;
 using StardewValley.ItemTypeDefinitions;
 
-namespace CJBItemSpawner.Framework.ItemData;
+namespace WikiInGameTools.GetItemInfo.ItemData;
+
+// This file is copied from CJBItemSpawner (https://github.com/CJBok/SDV-Mods)
+// Released under the MIT license. Copyright from CJBok.
 
 /// <summary>A game item with metadata.</summary>
 /// <remarks>This is copied from the SMAPI source code and should be kept in sync with it.</remarks>

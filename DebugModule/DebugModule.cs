@@ -24,7 +24,8 @@ public class DebugModule : IModule
     {
         IsActive = false;
         _harmony.UnpatchAll(_harmony.Id);
-        ModEntry.Log("已取消注入全部补丁", LogLevel.Info);
+        if (Config.Enable)
+            ModEntry.Log("已取消注入全部补丁", LogLevel.Info);
     }
 
     /// <summary>应用所有硬编码的C#补丁。</summary>

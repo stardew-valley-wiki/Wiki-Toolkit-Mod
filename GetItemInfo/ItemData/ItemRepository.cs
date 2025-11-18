@@ -1,18 +1,19 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Xna.Framework.Content;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.GameData.FishPonds;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Objects;
 using SObject = StardewValley.Object;
 
-namespace CJBItemSpawner.Framework.ItemData;
+// This file is copied from CJBItemSpawner (https://github.com/CJBok/SDV-Mods)
+// Released under the MIT license. Copyright from CJBok.
 
-
+namespace WikiInGameTools.GetItemInfo.ItemData;
 
 /// <summary>Provides methods for searching and constructing items.</summary>
 /// <remarks>This is copied from the SMAPI source code and should be kept in sync with it.</remarks>

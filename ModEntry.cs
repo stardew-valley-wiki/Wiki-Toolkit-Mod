@@ -33,6 +33,7 @@ internal class ModEntry : Mod
     #region Modules
     private static CalcFishesProb.CalcFishesProb CalcFishesProb { get; set; }
     private static DebugModule.DebugModule DebugModule { get; set; }
+    private static GameDataSerializer.GameDataSerializer GameDataSerializer { get; set; }
     private static GetItemInfo.GetItemInfo GetItemInfo { get; set; }
     private static GetNPCGiftTastes.GetNPCGiftTastes GetNPCGiftTastes { get; set; }
     private static VariableMonitor.VariableMonitor VariableMonitor { get; set; }
@@ -55,9 +56,9 @@ internal class ModEntry : Mod
 
         Config = helper.ReadConfig<ModConfig>();
         
-        var harmony = new Harmony(this.ModManifest.UniqueID);
+        var harmony = new Harmony(ModManifest.UniqueID);
         harmony.Patch(
-            original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.needsToBeDonated)),
+            original: AccessTools.Method(typeof(Object), nameof(Object.needsToBeDonated)),
             prefix: new HarmonyMethod(typeof(ModEntry), nameof(NeedsToBeDonated))
         );
     }
@@ -91,6 +92,9 @@ internal class ModEntry : Mod
         if (Config.CalcFishesProbModConfig.Enable)
             CalcFishesProb.Activate();
 
+        if (Config.GameDataSerializerModConfig.Enable)
+            GameDataSerializer.Activate();
+
         if (Config.GetItemInfoModConfig.Enable)
             GetItemInfo.Activate();
 
@@ -104,6 +108,7 @@ internal class ModEntry : Mod
     private static void OnGameUnload(object sender, ReturnedToTitleEventArgs e)
     {
         CalcFishesProb.Deactivate();
+        GameDataSerializer.Deactivate();
         GetItemInfo.Deactivate();
         GetNPCGiftTastes.Deactivate();
 
@@ -125,6 +130,7 @@ internal class ModEntry : Mod
         );
 
         CalcFishesProb = new CalcFishesProb.CalcFishesProb();
+        GameDataSerializer = new GameDataSerializer.GameDataSerializer();
         GetItemInfo = new GetItemInfo.GetItemInfo();
         GetNPCGiftTastes = new GetNPCGiftTastes.GetNPCGiftTastes();
     }
@@ -152,6 +158,7 @@ internal class ModEntry : Mod
     {
         ModHelper.WriteConfig(Config);
         Config = ModHelper.ReadConfig<ModConfig>();
+        GameDataSerializer.Reload();
         GetNPCGiftTastes.Reload();
         GetItemInfo.Reload();
 

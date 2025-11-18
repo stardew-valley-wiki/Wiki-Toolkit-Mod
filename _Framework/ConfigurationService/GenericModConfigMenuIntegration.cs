@@ -33,6 +33,12 @@ internal static class GenericModConfigMenuIntegration
             delegate(bool value) { ModEntry.Config.DebugModuleConfig.Enable = value; },
             () => "启用");
 
+        api.AddSectionTitle(ModEntry.Manifest, () => "游戏数据解析模块");
+        api.AddBoolOption(ModEntry.Manifest,
+            () => ModEntry.Config.GameDataSerializerModConfig.Enable,
+            delegate(bool value) { ModEntry.Config.GameDataSerializerModConfig.Enable = value; },
+            () => "启用");
+
         api.AddSectionTitle(ModEntry.Manifest, () => "获取物品信息模块");
         api.AddBoolOption(ModEntry.Manifest,
             () => ModEntry.Config.GetItemInfoModConfig.Enable,

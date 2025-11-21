@@ -35,6 +35,7 @@ internal struct Seed : IObject
     /// <summary>
     /// 种子的配方信息，若有。
     /// </summary>
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public Recipe? RecipeData { get; } = null;
 
     public Seed(Object obj)

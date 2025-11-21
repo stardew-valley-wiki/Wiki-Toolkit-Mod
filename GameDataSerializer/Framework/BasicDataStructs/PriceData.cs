@@ -43,8 +43,18 @@ internal struct PriceData
 
     public PriceData(ItemQueryResult result, string shopID, ShopData shop, ShopItemData data, Currency currency)
     {
-        Currency = data.TradeItemId is null ? currency : Currency.TradeIn;
-        TradeInItem = data.TradeItemId is not null ? new Item(data.TradeItemId, data.TradeItemAmount) : null;
+        Currency = data.TradeItemId switch
+        {
+            null => currency,
+            "(O)858" => Currency.Gem,
+            _ => Currency.TradeIn
+        };
+        TradeInItem = data.TradeItemId switch
+        {
+            null => null,
+            "(O)858" => null,
+            _ => new Item(data.TradeItemId, data.TradeItemAmount)
+        };
         Stock = data.AvailableStock == -1 ? null : data.AvailableStock;
         Stack = data.MinStack == -1 ? null : data.MinStack;
 
@@ -54,10 +64,27 @@ internal struct PriceData
             return;
         }
 
-        var price = ShopBuilder.GetBasePrice(result, shop, data, item, false, data.UseObjectDataPrice);
-        Price = shopID == "Traveler"
-            ? Price = price
+        var price = data.TradeItemId == "(O)858" 
+            ? data.TradeItemAmount
+            : ShopBuilder.GetBasePrice(result, shop, data, item, false, data.UseObjectDataPrice);
+
+        Price = shopID == "Traveler" || data.IgnoreShopPriceModifiers
+            ? price
             : (int)Utility.ApplyQuantityModifiers(price, shop.PriceModifiers, shop.PriceModifierMode);
+    }
+
+    public override string ToString()
+    {
+        var currency = Currency switch
+        {
+            Currency.StarToken => "Token",
+            Currency.QiCoin => "Qi",
+            Currency.TradeIn => TradeInItem?.Name ?? "TradeIn",
+            Currency.Gem => "Gem",
+            _ => ""
+        };
+        var price = Currency == Currency.TradeIn ? TradeInItem?.Amount ?? 0 : Price;
+        return $"{{{{Price|{price}|{currency}}}}}";
     }
 }
 
@@ -65,12 +92,16 @@ public enum Currency
 {
     /// <summary>金币</summary>
     Money,
+
     /// <summary>星星币</summary>
     StarToken,
+
     /// <summary>齐币</summary>
     QiCoin,
+
     /// <summary>以物易物</summary>
     TradeIn,
+
     /// <summary>齐钻</summary>
     Gem
 }

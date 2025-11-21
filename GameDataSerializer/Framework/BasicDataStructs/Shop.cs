@@ -44,12 +44,14 @@ internal struct Shop
 
 internal static class Shops
 {
+    private static readonly HashSet<string> SkippedShop = new() { "Concessions" };
     public static readonly Dictionary<string, Shop> AllShops;
 
     static Shops()
     {
         var shops = DataLoader.Shops(Game1.content);
         AllShops = shops
+            .Where(kvp => !SkippedShop.Contains(kvp.Key))
             .ToDictionary(kvp => kvp.Key, kvp => new Shop(kvp.Key, kvp.Value));
     }
 
